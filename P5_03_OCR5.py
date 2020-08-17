@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from scipy.cluster.hierarchy import dendrogram
 from matplotlib.collections import LineCollection
+from scipy.cluster.hierarchy import linkage, fcluster, cophenet, dendrogram
+from scipy.spatial.distance import pdist
 
 
 def plot_dendrogram(Z, names):
@@ -108,7 +109,8 @@ def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=
             color4=(1, 0, 0, 1)
             color5=(0.29, 0, 0.51, 1)
 
-            colormap = np.array([color1, color2, color3, color4, color5])
+            colormap = np.array([color1, color2, color3, color4, color5]).reshape(1,-1)
+            c =  np.sqrt(area)
             
             X_projected = np.hstack((X_projected, np.atleast_2d(data).T))
 
@@ -150,18 +152,6 @@ def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=
             plt.title("Projection des individus (sur F{} et F{})".format(d1+1, d2+1))
             plt.show(block=False)
             
-def lorenz(df):
-    dep = df.values
-    n = len(dep)
-    lorenz = np.cumsum(np.sort(dep)) / dep.sum()
-    lorenz = np.append([0],lorenz) # La courbe de Lorenz commence à 0
-    
-    AUC = (lorenz.sum() -lorenz[-1]/2 -lorenz[0]/2)/n # Surface sous la courbe de Lorenz. Le premier segment (lorenz[0]) est à moitié en dessous de 0, on le coupe donc en 2, on fait de même pour le dernier segment lorenz[-1] qui est à moitié au dessus de 1.
-    S = 0.5 - AUC # surface entre la première bissectrice et le courbe de Lorenz
-    gini = 2*S
-    
-    return (lorenz, n, gini)
-
 def chi_2(X, Y, df):
     cont = pd.pivot_table(df[[X, Y]], index=X ,columns=Y, aggfunc=len, margins=True, margins_name="Total")
 
@@ -187,3 +177,47 @@ def eta_squared(x,y):
     SCT = sum([(yj-moyenne_y)**2 for yj in y])
     SCE = sum([c['ni']*(c['moyenne_classe']-moyenne_y)**2 for c in classes])
     return SCE/SCT
+
+def lorenz(df):
+    dep = df.values
+    n = len(dep)
+    lorenz = np.cumsum(np.sort(dep)) / dep.sum()
+    lorenz = np.append([0],lorenz) # La courbe de Lorenz commence à 0
+    
+    AUC = (lorenz.sum() -lorenz[-1]/2 -lorenz[0]/2)/n # Surface sous la courbe de Lorenz. Le premier segment (lorenz[0]) est à moitié en dessous de 0, on le coupe donc en 2, on fait de même pour le dernier segment lorenz[-1] qui est à moitié au dessus de 1.
+    S = 0.5 - AUC # surface entre la première bissectrice et le courbe de Lorenz
+    gini = 2*S
+    
+    return (lorenz, n, gini)
+
+def coefCophenetic(df):
+    """
+        Prends une data frame. Permet de calculer les coefficients Cophenetic de chaque méthode
+        pour un dataFrame donné pour la fonction sklearn.linkage.
+        Les DataFrames doivent être centré et réduit
+        Retourne un DataFrame avec les coefficients
+    """
+    methods = ['Single', 'Complete', 'Average', 'Weighted', 'Centroid', 'Median', 'Ward']
+    copheneticCoef = []
+    for method in methods:
+        Z = linkage(df, method.lower())
+        c, coph_dists = cophenet(Z, pdist(df))
+        copheneticCoef.append(round(c,2))
+        
+    return pd.DataFrame(data=[copheneticCoef], columns=methods, index=['Cophenetic Coefficient'])
+
+def coefGini(df):
+    """
+        Prends une data frame. Permet de calculer les coefficients Gini de chaque méthode
+        pour un dataFrame donné pour la fonction sklearn.linkage.
+        Les DataFrames doivent être centré et réduit
+        Retourne un DataFrame avec les coefficients
+    """
+    methods = ['Single', 'Complete', 'Average', 'Weighted', 'Centroid', 'Median', 'Ward']
+    giniCoeff = []
+    for method in methods:
+        Z = linkage(df, method.lower())
+        _, _, gini = lorenz(pd.DataFrame(data=Z[:,2]))
+        giniCoeff.append(gini)
+
+    return pd.DataFrame(data=[giniCoeff], columns=methods, index=['Gini Coefficient'])
