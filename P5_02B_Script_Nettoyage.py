@@ -20,9 +20,10 @@ df_data = df_data[df_data['Code Élément'].isin(codeElementAGarder)]
 df_data['Difference de population'] = (df_data['Y2017'] - df_data['Y2014']) / df_data['Y2017'] * 100
 
 # Nous mettons en colonne les lignes du tableau
-df_data = OCR.ligneToColonne(df_data, [2901, 664, 'Disponibilité alimentaire Kcal'])
-df_data = OCR.ligneToColonne(df_data, [2901, 674, 'Disponibilité alimentaire Protéine'])
-df_data = OCR.ligneToColonne(df_data, [2941, 674, 'Proportion Protéine Animale'])
+colonne = ['Zone', 'Y2017']
+df_data = OCR.ligneToColonne(df_data, [2901, 664, 'Disponibilité alimentaire Kcal', colonne])
+df_data = OCR.ligneToColonne(df_data, [2901, 674, 'Disponibilité alimentaire Protéine', colonne])
+df_data = OCR.ligneToColonne(df_data, [2941, 674, 'Proportion Protéine Animale', colonne])
 
 # Nous calculons la proportion de protéine animale par rapport au protéine totale
 df_data['Proportion Protéine Animale'] /= df_data['Disponibilité alimentaire Protéine']
@@ -34,5 +35,7 @@ df_data = df_data.loc[filt, colonne]
 
 # Nous exportons le fichier nettoyé
 df_data.to_csv(path_or_buf='./Export/data.csv', index=False)
+
+
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 from matplotlib.collections import LineCollection
@@ -25,14 +26,15 @@ def ligneToColonne(df, liste):
         Liste[0] est le Code Produit
         Liste[1] est le Code Élément
         Liste[2] est le nom de la nouvelle colonne
+        Liste[3] sont les colonnes à merger
     """
     
     filt = (df['Code Produit'] == liste[0]) & (df['Code Élément'] == liste[1])
-    colonne = ['Zone', 'Y2017']
+    colonne = liste[3]
     avec = ['Zone']
 
     df = df.merge(df.loc[filt, colonne], how = 'left', on = avec).fillna(0)
-    df.rename(columns={'Y2017_x': 'Y2017', 'Y2017_y': liste[2]}, inplace=True)
+    df.rename(columns={liste[3][1] + '_x': liste[3][1], liste[3][1] + '_y': liste[2]}, inplace=True)
     
     return df
 
@@ -103,14 +105,13 @@ def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=
             # initialisation de la figure       
             fig = plt.figure(figsize=(20,20))
         
-            color1=(0, 0, 1, 1)
-            color2=(1, 0.65, 0, 1)
-            color3=(0, 1, 0, 1)
-            color4=(1, 0, 0, 1)
-            color5=(0.29, 0, 0.51, 1)
+            color1=[0, 0, 1, 1]
+            color2=[1, 0.65, 0, 1]
+            color3=[0, 1, 0, 1]
+            color4=[1, 0, 0, 1]
+            color5=[0.29, 0, 0.51, 1]
 
-            colormap = np.array([color1, color2, color3, color4, color5]).reshape(1,-1)
-            c =  np.sqrt(area)
+            colormap = np.array([color1, color2, color3, color4, color5])
             
             X_projected = np.hstack((X_projected, np.atleast_2d(data).T))
 
@@ -221,3 +222,53 @@ def coefGini(df):
         giniCoeff.append(gini)
 
     return pd.DataFrame(data=[giniCoeff], columns=methods, index=['Gini Coefficient'])
+
+def plotbox(data, clusters):   
+    data['Clusters'] = clusters
+    data_all = data.copy()
+    data_all['Clusters'] = 0
+    data = data.append(data_all, ignore_index=True)
+    data.sort_values(by=['Clusters'], inplace = True)
+    data.loc[data['Clusters'] == 0, 'Clusters'] = 'All'
+
+    for colonne in data.columns:
+        if colonne != 'Clusters':
+
+            fig, axes = plt.subplots(figsize=(20, 16))
+
+            mu = data[colonne].mean()
+            sigma = data[colonne].std()
+
+            df = (data[colonne] - mu) / sigma
+
+            fig.suptitle('Moyenne de la '+colonne+ ' en fonction du cluster', fontsize= 18)
+
+            ax1 = sns.boxplot(x=data['Clusters'], y=df, showmeans=True)
+            ax2 = sns.swarmplot(x=data['Clusters'], y=df, color=".25")
+
+            plt.xlabel("Cluster N°")
+            plt.ylabel(colonne +" (σ)")
+
+            # these are matplotlib.patch.Patch properties
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+
+            i = 0
+
+            for cluster in data['Clusters'].unique():
+
+                mu_clusters = data.loc[data['Clusters'] == cluster, colonne].mean()
+                sigma_clusters = data.loc[data['Clusters'] == cluster, colonne].std()
+
+                textstr = '\n'.join((
+                    r'Population : ',
+                    r'$\mu=%.2f$' % (mu_clusters, ),
+                    r'$\sigma=%.2f$' % (sigma_clusters, ),
+                    r'$n=%.0f$' % (len(data.loc[data['Clusters'] == cluster, colonne]))))
+
+                # place a text box in upper left in axes coords
+                axes.text(0.05 + 0.99 / len(data['Clusters'].unique()) * i, 1.09, textstr, transform=axes.transAxes, fontsize=14,
+                        verticalalignment='top', bbox=props)
+
+                i = i + 1
+
+            plt.show()
