@@ -245,6 +245,7 @@ def plotbox(data, clusters):
 
             ax1 = sns.boxplot(x=data['Clusters'], y=df, showmeans=True)
             ax2 = sns.swarmplot(x=data['Clusters'], y=df, color=".25")
+            plt.axvline(0.5)
 
             plt.xlabel("Cluster N°")
             plt.ylabel(colonne +" (σ)")
@@ -272,3 +273,19 @@ def plotbox(data, clusters):
                 i = i + 1
 
             plt.show()
+            
+def NettoyagePays(df):
+    # Nous enlevons les données concernant des groupements de pays (Code zone > 5000)
+    df = df[~(df['Code zone'] >= 5000)]
+
+    # Nous enlevons les données concernant la Chine qui est un groupement de pays (Code Zone = 351)
+    df = df[~(df['Code zone'] == 351)]
+    
+    return df
+
+
+def ElementAGarder(df, element, produit):
+    df = df[df['Code Produit'].isin(produit)]
+    df = df[df['Code Élément'].isin(element)]
+    
+    return df
