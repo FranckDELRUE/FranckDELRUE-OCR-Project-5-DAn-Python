@@ -271,7 +271,8 @@ def plotbox(data, clusters):
                         verticalalignment='top', bbox=props)
 
                 i = i + 1
-
+            
+            plt.savefig('Images/carac_paires_'+colonne+'.png')
             plt.show()
             
 def NettoyagePays(df):
