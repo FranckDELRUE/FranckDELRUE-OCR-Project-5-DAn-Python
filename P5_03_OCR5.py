@@ -45,6 +45,7 @@ def display_scree_plot(pca):
     plt.xlabel("rang de l'axe d'inertie")
     plt.ylabel("pourcentage d'inertie")
     plt.title("Eboulis des valeurs propres")
+    plt.savefig('Images/ebouli.png')
     plt.show(block=False)
     
 def display_circles(pcs, n_comp, pca, axis_ranks, labels=None, label_rotation=0, lims=None):
@@ -105,11 +106,11 @@ def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=
             # initialisation de la figure       
             fig = plt.figure(figsize=(20,20))
         
-            color1=[0, 0, 1, 1]
-            color2=[1, 0.65, 0, 1]
-            color3=[0, 1, 0, 1]
-            color4=[1, 0, 0, 1]
-            color5=[0.29, 0, 0.51, 1]
+            color1=[255/255,140/255,0/255, 1]
+            color2=[75/255,0/255,130/255, 1]
+            color3=[139/255,69/255,19/255, 1]
+            color4=[0/255, 100/255, 0/255, 1]
+            color5=[220/255, 20/255, 60/255, 1]
 
             colormap = np.array([color1, color2, color3, color4, color5])
             
@@ -151,6 +152,8 @@ def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=
             plt.ylabel('F{} ({}%)'.format(d2+1, round(100*pca.explained_variance_ratio_[d2],1)))
 
             plt.title("Projection des individus (sur F{} et F{})".format(d1+1, d2+1))
+            
+            plt.savefig('Images/factorial_plane_'+str(d1)+'.png')
             plt.show(block=False)
             
 def chi_2(X, Y, df):
@@ -272,7 +275,7 @@ def plotbox(data, clusters):
 
                 i = i + 1
             
-            plt.savefig('Images/carac_paires_'+colonne+'.png')
+            plt.savefig('Images/plotbox_'+colonne+'.png')
             plt.show()
             
 def NettoyagePays(df):
