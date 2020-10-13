@@ -93,10 +93,11 @@ def display_circles(pcs, n_comp, pca, axis_ranks, labels=None, label_rotation=0,
             plt.plot([0, 0], [-1, 1], color='grey', ls='--')
 
             # nom des axes, avec le pourcentage d'inertie expliqué
-            plt.xlabel('F{} ({}%)'.format(d1+1, round(100*pca.explained_variance_ratio_[d1],1)))
-            plt.ylabel('F{} ({}%)'.format(d2+1, round(100*pca.explained_variance_ratio_[d2],1)))
+            plt.ylabel('F{} ({}%)'.format(d1+1, round(100*pca.explained_variance_ratio_[d1],1)))
+            plt.xlabel('F{} ({}%)'.format(d2+1, round(100*pca.explained_variance_ratio_[d2],1)))
 
             plt.title("Cercle des corrélations (F{} et F{})".format(d1+1, d2+1))
+            plt.savefig('Images/display_circles_'+str(d1)+'.png')
             plt.show(block=False)
             
 def display_factorial_planes(X_projected, n_comp, pca, axis_ranks, data, labels=None, alpha=1, illustrative_var=None):
@@ -270,9 +271,7 @@ def plotbox(data, clusters):
                     r'$n=%.0f$' % (len(data.loc[data['Clusters'] == cluster, colonne]))))
 
                 # place a text box in upper left in axes coords
-                axes.text(0.05 + 0.99 / len(data['Clusters'].unique()) * i, 1.09, textstr, transform=axes.transAxes, fontsize=14,
-                        verticalalignment='top', bbox=props)
-
+                axes.text(1 / len(data['Clusters'].unique()) / 2 + (1 / len(data['Clusters'].unique()) * i) - 0.083/2, 1.09, textstr, transform=axes.transAxes, fontsize=14, verticalalignment='top', bbox=props)
                 i = i + 1
             
             plt.savefig('Images/plotbox_'+colonne+'.png')
